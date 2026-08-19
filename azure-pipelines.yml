@@ -39,18 +39,20 @@ stages:
         npm test
       displayName: 'Run automated tests'
 
-- stage: DockerBuild
-  displayName: 'Docker Build Stage'
+- stage: DockerBuildPush
+  displayName: 'Docker Build and Push Stage'
   dependsOn: Test
   jobs:
-  - job: DockerBuildJob
+  - job: DockerBuildPushJob
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - task: Docker@2
       inputs:
-        command: 'build'
+        containerRegistry: 'dockerhub-conn'
+        repository: 'sathishrajakumar/task-api'
+        command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
-        repository: 'task-api'
-        tags: '$(Build.BuildId)'
-      displayName: 'Build Docker image'
+        tags: |
+          $(Build.BuildId)
+          latest
