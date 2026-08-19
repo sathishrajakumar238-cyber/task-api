@@ -1,29 +1,56 @@
 # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
 trigger:
   branches:
     include:
       - main
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: 'Install Node.js'
+    - script: |
+        npm install
+      displayName: 'Install dependencies'
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+- stage: Test
+  displayName: 'Test Stage'
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: 'Install Node.js'
+    - script: |
+        npm install
+        npm test
+      displayName: 'Run automated tests'
 
-- script: |
-    npm install
-  displayName: 'Install dependencies'
-
-- task: Docker@2
-  inputs:
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
-    repository: 'task-api'
-    tags: '$(Build.BuildId)'
-  displayName: 'Build Docker image'
+- stage: DockerBuild
+  displayName: 'Docker Build Stage'
+  dependsOn: Test
+  jobs:
+  - job: DockerBuildJob
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        repository: 'task-api'
+        tags: '$(Build.BuildId)'
+      displayName: 'Build Docker image'
