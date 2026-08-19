@@ -24,3 +24,5 @@ docker run -p 3000:3000 task-api
 
 ## CI Pipeline
 Every push to `main` triggers an Azure DevOps pipeline that installs dependencies and builds the Docker image automatically.
+
+This project uses Azure DevOps CI/CD with branch protection.
